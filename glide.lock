@@ -1,8 +1,6 @@
-hash: e5efc1910309ee7795b94016c6206b7a00c0c008d6f402eddf48de4f030f142f
-updated: 2016-11-08T12:23:35.080470466+09:00
+hash: 8bbe47ad505f8ebf9ce8f39338ea91f439de68b38fe5400c2fa37916d4445a2a
+updated: 2016-11-08T14:38:58.613712748+09:00
 imports:
-- name: github.com/gorilla/context
-  version: 1ea25387ff6f684839d82767c1733ff4d4d15d0a
-- name: github.com/gorilla/mux
-  version: 0eeaf8392f5b04950925b8a69fe70f110fa7cbfc
+- name: github.com/gin-gonic/gin
+  version: 2dae550eb5392006a4582ce9c90016a9b5a74e8b
 testImports: []
