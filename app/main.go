@@ -2,10 +2,11 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
-func main() {
-	router := gin.Default()
+func init() {
+	router := gin.New()
 	v1 := router.Group("/v1")
 	{
 		v1.GET("/test", test)
@@ -15,7 +16,7 @@ func main() {
 		//v1.POST("/gimmick/:id", setGimmick)
 	}
 	
-	router.Run() // listen and server on 0.0.0.0:8080
+	http.Handle("/", router)
 }
 
 func test(ctx *gin.Context){
