@@ -14,10 +14,10 @@ func init() {
 	router := gin.New()
 	v1 := router.Group("/v1")
 	{
-		v1.GET("/gimmick", getGimmicks)
+		v1.GET("/gimmick/list", getGimmicks)
 		v1.POST("/gimmick/new", newGimmick)
-		v1.GET("/gimmick/:id", getGimmick)
-		v1.POST("/gimmick/:id", setGimmick)
+		v1.GET("/gimmick/get/:id", getGimmick)
+		v1.POST("/gimmick/set/:id", setGimmick)
 	}
 
 	http.Handle("/", router)
@@ -37,18 +37,24 @@ type gimmick struct {
 
 //Gimmicks is a list of Gimmick.
 type gimmicks struct {
-	List []gimmick `json:"list"`
+	Items []gimmick `json:"items"`
 }
 
 func getGimmicks(ctx *gin.Context) {
 	gaeCtx := appengine.NewContext(ctx.Request)
 	var gimmicks gimmicks
-	keys, err := datastore.NewQuery("Gimmick").GetAll(gaeCtx, &gimmicks.List)
+	_, err := datastore.NewQuery("Gimmick").GetAll(gaeCtx, &gimmicks.Items)
 
 	if err != nil {
 		ctx.JSON(500, gin.H{"message": err})
+		return;
+	}
+	
+	byteStr, err := json.Marshal(gimmicks)
+	if err != nil {
+		ctx.JSON(500, gin.H{"message": err})
 	} else {
-		ctx.JSON(200, json.Marshal(gimmicks))
+		ctx.JSON(200, string(byteStr))
 	}
 }
 
@@ -57,7 +63,7 @@ func newGimmick(ctx *gin.Context) {
 	ctx.BindJSON(&gimmick)
 	gaeCtx := appengine.NewContext(ctx.Request)
 	newkey := datastore.NewKey(gaeCtx, "Gimmick", "", 0, nil)
-	key, err := datastore.Put(gaeCtx, newkey, &gimmick)
+	_, err := datastore.Put(gaeCtx, newkey, &gimmick)
 	if err != nil {
 		ctx.JSON(500, gin.H{"message": err})
 	} else {
@@ -69,17 +75,23 @@ func getGimmick(ctx *gin.Context) {
 	id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
 	if err != nil {
 		ctx.JSON(500, gin.H{"message": err})
+		return;
 	}
 
 	var gimmick gimmick
 	gaeCtx := appengine.NewContext(ctx.Request)
 	key := datastore.NewKey(gaeCtx, "Gimmick", "", id, nil)
-	_key, err := datastore.Get(gaeCtx, key, &gimmick)
-
+	err = datastore.Get(gaeCtx, key, &gimmick)
+	if err != nil {
+		ctx.JSON(500, gin.H{"message": err})
+		return;
+	}
+	
+	byteStr, err := json.Marshal(gimmick)
 	if err != nil {
 		ctx.JSON(500, gin.H{"message": err})
 	} else {
-		ctx.JSON(200, json.Marshal(gimmick))
+		ctx.JSON(200, string(byteStr))
 	}
 }
 
@@ -93,7 +105,7 @@ func setGimmick(ctx *gin.Context) {
 	ctx.BindJSON(&gimmick)
 	gaeCtx := appengine.NewContext(ctx.Request)
 	key := datastore.NewKey(gaeCtx, "Gimmick", "", id, nil)
-	_key, err := datastore.Put(gaeCtx, key, &gimmick)
+	_, err = datastore.Put(gaeCtx, key, &gimmick)
 
 	if err != nil {
 		ctx.JSON(500, gin.H{"message": err})
