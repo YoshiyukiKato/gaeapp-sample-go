@@ -7,6 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
+	
+	"model"
 )
 //"google.golang.org/appengine/log"
 
@@ -23,26 +25,9 @@ func init() {
 	http.Handle("/", router)
 }
 
-//Gimmick data model.
-type gimmick struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Src         string `json:"src"`
-	Media       string `json:"media"`
-	Env         string `json:"env"`
-	Path        string `json:"path"`
-	PageAction  string `json:"pageAction"`
-	Persona     string `json:"persona"`
-}
-
-//Gimmicks is a list of Gimmick.
-type gimmicks struct {
-	Items []gimmick `json:"items"`
-}
-
 func getGimmicks(ctx *gin.Context) {
 	gaeCtx := appengine.NewContext(ctx.Request)
-	var gimmicks gimmicks
+	var gimmicks model.Gimmicks
 	
 	if _, err := datastore.NewQuery("Gimmick").GetAll(gaeCtx, &gimmicks.Items); err != nil {
 		ctx.JSON(500, gin.H{"message": err})
@@ -52,7 +37,7 @@ func getGimmicks(ctx *gin.Context) {
 }
 
 func newGimmick(ctx *gin.Context) {
-	var gimmick gimmick
+	var gimmick model.Gimmick
 	if jsonerr := ctx.BindJSON(&gimmick); jsonerr != nil{
 		ctx.JSON(400, gin.H{"message": "no data given"})
 		return;
@@ -77,7 +62,7 @@ func getGimmick(ctx *gin.Context) {
 		return
 	}
 
-	var gimmick gimmick
+	var gimmick model.Gimmick
 	gaeCtx := appengine.NewContext(ctx.Request)
 	key := datastore.NewKey(gaeCtx, "Gimmick", "", id, nil)
 	
@@ -96,7 +81,7 @@ func setGimmick(ctx *gin.Context) {
 		ctx.JSON(500, gin.H{"message": err})
 	}
 
-	var gimmick gimmick
+	var gimmick model.Gimmick
 	ctx.BindJSON(&gimmick)
 	gaeCtx := appengine.NewContext(ctx.Request)
 	key := datastore.NewKey(gaeCtx, "Gimmick", "", id, nil)
