@@ -1,5 +1,10 @@
 package model
 
+//Gimmicks is a list of Gimmick.
+type Gimmicks struct {
+	Items []Gimmick `json:"items"`
+}
+
 //Gimmick data model.
 type Gimmick struct {
 	Name        string `json:"name"`
@@ -11,9 +16,3 @@ type Gimmick struct {
 	PageAction  string `json:"pageAction"`
 	Persona     string `json:"persona"`
 }
-
-//Gimmicks is a list of Gimmick.
-type Gimmicks struct {
-	Items []Gimmick `json:"items"`
-}
-

@@ -14,7 +14,8 @@ import (
 
 func init() {
 	router := gin.New()
-	v1 := router.Group("/v1")
+	api := router.Group("/api")
+	v1 := api.Group("/v1")
 	{
 		v1.GET("/gimmick/list", getGimmicks)
 		v1.POST("/gimmick/new", newGimmick)
@@ -52,7 +53,6 @@ func newGimmick(ctx *gin.Context) {
 	} 
 	
 	ctx.JSON(200, gin.H{"message": "complete!"})
-	
 }
 
 func getGimmick(ctx *gin.Context) {
@@ -72,7 +72,6 @@ func getGimmick(ctx *gin.Context) {
 	}
 	
 	ctx.JSON(200, gimmick)
-	
 }
 
 func setGimmick(ctx *gin.Context) {
