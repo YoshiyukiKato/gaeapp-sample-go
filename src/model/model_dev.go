@@ -15,7 +15,7 @@ import (
 type Model struct{
   Kind string
   Context appengine.Context
-  Schema 
+  Instance interface{}
 }
 
 func (m Model) Init(r *http.Request){
@@ -52,11 +52,11 @@ func (m Model) FindBy(paramName, paramValue) interface{}, Error{
     return nil, errors.New("Context is not initialized")
   }
 
-  instances, err := datastore.NewQuery(m.Kind).Filter(paramName, paramValue).Run()
-	if err != nil {
-		return nil, err
-	}
+  terms := map["string"]interface{}{
+    paramName : paramValue
+  }
 
+  instances, err := m.Where(terms)  
   return instances, nil
 }
 
@@ -64,8 +64,22 @@ func (m Model) New() interface{}, Error{
 
 }
 
-type Instance struct{}
+func (m Model) Where(terms map[string]interface{}) []interface{}, Error{
+  query := datastore.NewQuery(m.Kind)
+  for filterStr, value := range terms{
+    query.Filter(filterStr, value)
+  }
+  
+  var instances []m.Schema //m.Shemaをどう持たせるか問題
+  _, err := datastore.NewQuery(m.Kind).Filter(paramName, paramValue).GetAll(&instances)
+  return instances, err
+}
 
-func (i Instance) Save() int, Error {
+func (m Model) Save(interface{}) Error{
 
+}
+
+
+type Instance struct{
+  Model
 }
