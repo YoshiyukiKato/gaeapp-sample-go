@@ -10,6 +10,8 @@ import (
 	"google.golang.org/appengine/datastore"
 )
 
+//Paramをmap[string]interface{}型にして指定できるようにする（とかもあり
+//&Param{ "type" : "string", "notNull" : true, "defaultTo" : "hogehoge" }
 
 //Model is interface for datastore
 type Model struct{
