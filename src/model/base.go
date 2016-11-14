@@ -14,11 +14,45 @@ import (
 type Model struct{
   Kind string
   Context context.Context
-  Instance interface{}
+  Columns map[string]Column
+}
+
+type Column struct{
+  Type string
+  NotNull bool
+  DefaultTo interface{}
+  Constraint func(interface{}) bool
+}
+
+func (c Column) validate(value interface{}) (value interface{}, err error){
+  //1. validate type.
+  //2. validate by Constraint.
+  //3. if nil, set default value.
+  //4. validate if nil when notNull is true
 }
 
 type Instance struct{
-  Key datastore.Key
+  Model Model
+  Params map[string]Param
+}
+
+type Param{
+  Column Column
+  Value interface{}
+}
+
+func (i Instance) setParams(params map[string]interface{}){
+  var param Param
+  for colName, column := range i.Model.Columns{
+    if params[colName] != nil {
+      //TODO validate type of param by colValue
+      i.Params[colName] = Param{ column, params[colName] }
+    }
+  }
+}
+
+func (m Model) New(){
+
 }
 
 func (m Model) Init(r *http.Request) Model{
