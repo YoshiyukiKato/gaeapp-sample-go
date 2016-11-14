@@ -1,17 +1,14 @@
 package model
 
-import (
-	"./base"
-)
-
 //Gimmicks is a list of Gimmick.
-type Gimmicks struct {
-	Items []Gimmick `json:"items"`
-}
+var Gimmick Model = Model{ gimmick{} }
 
+type Gimmicks struct {
+	Items []gimmick `json:"items"`
+}
 //Gimmick data model.
-type Gimmick struct{
-	base.Model
+type gimmick struct{
+	Instance
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Src         string `json:"src"`

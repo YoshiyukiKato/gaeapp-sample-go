@@ -1,16 +1,19 @@
-package base
+package model
 
 import (
   "net/http"
+  "reflect"
   "errors"
+  "golang.org/x/net/context"
   "google.golang.org/appengine"
   "google.golang.org/appengine/datastore"
 )
 
+//too many error. stash
 //Model is interface for datastore
 type Model struct{
   Kind string
-  Context appengine.Context
+  Context context.Context
   Instance interface{}
 }
 
@@ -23,47 +26,46 @@ func (m Model) Init(r *http.Request) Model{
   return m
 }
 
-func (m Model) New(params map[string] interface{}) Instance, Error{
+func (m Model) New(params map[string]interface{}) (instance Instance, err error){
   schema := reflect.TypeOf(m.Instance)
-  instance := reflect.New(schema).Elem()
+  instance = reflect.New(schema).Elem()
+  instance.Key = datastore.NewKey(m.Context, m.Kind, "", 0, nil)
 
-  var param interface{}
   for i := 0; i < schema.NumField(); i++ {
-    // フィールドの取得
     field := schema.Field(i)
-    param = params[field.Name]
+    param := params[field.Name]
     if param != nil && reflect.TypeOf(param) == field.Type{
       instance.Field(i).Set(param)
     }
   }
 
-  return instance
+  return instance, nil
 }
 
-func (m Model) Save(instance Instance) Instance, Error{
+func (m Model) Save(instance Instance) (err error){
   if m.Context == nil {
-    return nil, errors.New("Context is not initialized")
+    return errors.New("Context is not initialized")
   }
 
-  if instance.Key == nil {
-    newkey := datastore.NewKey(m.Context, m.Kind, "", 0, nil)
+  instanceKey := instance.Key
+  if instanceKey == nil {
   }
 
-  key, err := datastore.Put(m.Context, newkey, &instance)
+  key, err := datastore.Put(m.Context, instanceKey, &instance)
   if key != nil {
     instance.Key = key
   }
 
-  return instance, err
+  return err
 }
 
-func (m Model) Find(key datastore.Key) interface{}, Error{
+func (m Model) Find(key datastore.Key) (instance reflect.Value, err error){
   if m.Context == nil {
     return nil, errors.New("Context is not initialized")
   }
   
   schema := reflect.TypeOf(m.Instance)
-  instance := reflect.New(schema).Elem()
+  instance = reflect.New(schema).Elem()
   if geterr := datastore.Get(m.Context, key, instance); geterr == nil{
     instance.Key = key
   }
@@ -71,19 +73,19 @@ func (m Model) Find(key datastore.Key) interface{}, Error{
   return instance, geterr
 }
 
-func (m Model) All() []Instance, Error {
+func (m Model) All() (instances []interface{}, err error){
   return m.Where(nil)
 }
 
-func (m Model) FindBy(paramName string, paramValue interface{}) interface{}, Error{ 
-  terms := map["string"]interface{}{
-    paramName + " =" : paramValue
+func (m Model) FindBy(paramName string, paramValue interface{}) (instances []reflect.Value, err error){
+  terms := map[string]interface{}{
+    paramName + " =" : paramValue,
   }
 
   return m.Where(terms)  
 }
 
-func (m Model) Where(terms map[string]interface{}) []interface{}, Error{
+func (m Model) Where(terms map[string]interface{}) (instances []reflect.Value, err error){
   if m.Context == nil {
     return nil, errors.New("Context is not initialized")
   }
@@ -96,7 +98,7 @@ func (m Model) Where(terms map[string]interface{}) []interface{}, Error{
   }
   
   var keys []datastore.Key //m.Shemaをどう持たせるか問題
-  _, err := query.GetAll(keys)
+  _, err = query.GetAll(keys)
   if keyerr != nil{
     return nil, keyerr  
   }
